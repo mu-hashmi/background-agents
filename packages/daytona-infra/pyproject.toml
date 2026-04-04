@@ -19,9 +19,6 @@ dev = [
     "ruff>=0.9.0",
 ]
 
-[tool.uv.sources]
-daytona = { path = "../../../daytona/libs/sdk-python", editable = true }
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
