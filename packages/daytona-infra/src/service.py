@@ -230,7 +230,18 @@ class DaytonaSandboxService:
                 sandbox.start()
             else:
                 sandbox.refresh_data()
+        except DaytonaNotFoundError:
+            return {
+                "success": False,
+                "error": "Sandbox no longer exists in Daytona",
+                "shouldSpawnFresh": True,
+            }
 
+        # Tunnel URL generation runs after the sandbox is started so that a
+        # preview-URL failure doesn't mask a successful start.  The control
+        # plane will still see the sandbox as resumed and can retry tunnels on
+        # the next reconnect.
+        try:
             code_server_url, code_server_password, tunnel_urls = self._build_tunnel_urls(
                 sandbox,
                 request.timeout_seconds,
@@ -238,12 +249,10 @@ class DaytonaSandboxService:
                 request.sandbox_settings,
                 request.sandbox_id,
             )
-        except DaytonaNotFoundError:
-            return {
-                "success": False,
-                "error": "Sandbox no longer exists in Daytona",
-                "shouldSpawnFresh": True,
-            }
+        except Exception:
+            code_server_url = None
+            code_server_password = None
+            tunnel_urls = None
 
         return {
             "success": True,
